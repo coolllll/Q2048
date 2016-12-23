@@ -57,9 +57,10 @@ class World:
         self.win = 0
 
     def animate(self, delta):
+        # print(self.win)
         self.can_press = not self.grid_handle.on_move(delta)
         if(not self.can_press):
-            self.delay = 10
+            self.delay = 5
         if(self.can_press and self.delay > 0):
             self.delay -= 1
         if(self.can_press and not self.spawn):
@@ -68,8 +69,10 @@ class World:
         if(self.table.check_win()):
             self.win = 1
             # print('kuy')
-        elif(self.table.check_over()):
+        if(self.table.check_over()):
             self.win = -1
+        if(self.can_press):
+            self.grid_handle.cnt = 0
 
 
     def on_key_press(self, key, key_modifiers):
@@ -113,6 +116,7 @@ class GridHandle():
             self.cardType[2**(i+1)] = 'assets/'+str(2**(i+1))+'.png'
         self.sprite = []
         self.direction = {'up':[-1,0],'down':[1,0],'left':[0,-1],'right':[0,1]}
+        self.cnt = 0
 
     def add_card(self,x,y,type):
         self.grid.append(Card((x*100)+50,(y*100)+50,x,y,type))
@@ -125,7 +129,8 @@ class GridHandle():
         while(i < len(self.grid)):
             # print('1')
             if(self.grid[i].pos_x == x and self.grid[i].pos_y == y):
-                tmp = self.grid[i].type
+                if(self.grid[i].type > tmp):
+                    tmp = self.grid[i].type
                 del self.grid[i]
                 del self.sprite[i]
                 i -= 1
@@ -140,9 +145,14 @@ class GridHandle():
             self.grid[i].animate(delta)
             if((self.grid[i].pos_x*100)+50 != self.grid[i].x or (self.grid[i].pos_y*100)+50 != self.grid[i].y):
                 # print((self.grid[i].pos_x,self.grid[i].pos_y,self.grid[i].x,self.grid[i].y))
-                if(self.grid[i].x < 0 or self.grid[i].x > 800 or self.grid[i].y < 0 or self.grid[i].y > 500):
-                    self.grid[i].x = self.grid[i].pos_x
-                    self.grid[i].y = self.grid[i].pos_y
+                if(self.cnt > 50):
+                    self.grid[i].x = (self.grid[i].pos_x*100)+50
+                    self.grid[i].y = (self.grid[i].pos_y*100)+50
+                if((self.grid[i].pos_x*100)+50 == self.grid[i].x):
+                    self.grid[i].vx = 0
+                if((self.grid[i].pos_y*100)+50 == self.grid[i].y):
+                    self.grid[i].vy = 0
+                self.cnt += 1
                 to_ret = True
             else :
                 self.grid[i].vx = 0
